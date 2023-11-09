@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Waiting Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="{{ url_for('concerts.concerts') }}">Concerts</a></li>
+            <li><a href="{{ url_for('profile.view_profile') }}">Profile</a></li>
+        </ul>
+    </nav>
+
+    <h1>Waiting Room</h1>
+    <p>You are in the waiting room. Please wait for your turn to purchase tickets.</p>
+    <p id="position-info">Your current position in the queue: <span id="position">Calculating...</span></p>
+
+    <script>
+        // JavaScript function to check the start_ticket_sale date
+        function checkTicketSaleDate() {
+            var startTicketSaleDate = new Date("{{ concert.start_ticket_sale }}");
+            var currentDate = new Date();
+
+            if (currentDate >= startTicketSaleDate) {
+                // If the start_ticket_sale date has passed, display the virtual queue position
+                document.getElementById("position").innerText = "Your position: 5"; // Replace 5 with the actual queue position
+            }
+        }
+
+        // Call the function to check the date when the page loads
+        window.onload = checkTicketSaleDate;
+    </script>
+</body>
+</html>
