@@ -1,12 +1,20 @@
 from flask import flash, Blueprint, request, render_template, redirect, url_for, session
 from datetime import datetime
 import fairness_distribution_algorithm, requests
+from fairness_distribution_algorithm import User
 
 # Create a Blueprint for profile-related routes
 ticket_fairness_bp = Blueprint("ticket_fairness", __name__)
 
 base_url = 'http://127.0.0.1:5001'
 
+# Create a dictionary to store TicketingSystem instances
+ticketing_systems = {}
+
+# Define the acceptable range for the ticketing system
+acceptable_range = 100
+
+ticketing_system = fairness_distribution_algorithm.TicketingSystem(acceptable_range, concert.total_tickets_for_sale)
 
 def sale_has_started(concert_id):
     # Fetch the concert based on the concert_id
@@ -24,17 +32,11 @@ def sale_has_started(concert_id):
 
 @ticket_fairness_bp.route('/initial')
 def initial():
-    # Create a dictionary to store TicketingSystem instances
-    ticketing_systems = {}
-
-    # Define the acceptable range for the ticketing system
-    acceptable_range = 100
-
     # Fetch the list of concerts
     concerts = requests.get(f'{base_url}/concerts').json()
 
     for concert in concerts:
-        ticketing_system = fairness_distribution_algorithm.TicketingSystem(acceptable_range, concert.total_tickets_for_sale)
+
         ticketing_systems[concert.id] = ticketing_system
 
 
