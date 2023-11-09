@@ -1,7 +1,5 @@
-from flask import Blueprint, request, jsonify
+from flask import request, jsonify
 import boto3
-
-purchase_db_bp = Blueprint('purchase_db', __name__)
 
 # Initialize the DynamoDB client
 dynamodb = boto3.client('dynamodb', region_name='ap-southeast-1',
@@ -12,7 +10,6 @@ dynamodb = boto3.client('dynamodb', region_name='ap-southeast-1',
 purchases_table_name = 'Purchases'
 
 
-@purchase_db_bp.route('/purchases', methods=['GET'])
 def get_all_purchases():
     try:
         # Access the DynamoDB table to list all purchases
@@ -26,7 +23,6 @@ def get_all_purchases():
         return jsonify({'error': str(e)}), 500
 
 
-@purchase_db_bp.route('/purchase/<int:purchase_id>', methods=['GET'])
 def get_purchase(purchase_id):
     try:
         # Access the DynamoDB table to get a specific purchase by purchase_id
@@ -46,7 +42,6 @@ def get_purchase(purchase_id):
         return jsonify({'error': str(e)}), 500
 
 
-@purchase_db_bp.route('/purchases', methods=['POST'])
 def create_purchase():
     purchase_data = request.json
     try:

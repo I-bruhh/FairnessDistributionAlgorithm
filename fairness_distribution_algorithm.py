@@ -93,5 +93,3 @@ class TicketingSystem:
     def start_sale(self):
         queue_service = QueueService(self.waiting_room_service, self.tickets)
         queue_service.process_queue()
-
-
