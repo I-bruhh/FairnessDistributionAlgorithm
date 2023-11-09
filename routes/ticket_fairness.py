@@ -1,8 +1,13 @@
-from flask import flash, request, render_template, redirect, url_for, session
+from flask import Blueprint, flash, request, render_template, redirect, url_for, session
 from datetime import datetime
 import routes.concert_db as concert_db
 import routes.auth_db as auth_db
 from app import ticketing_systems
+
+# Create a Blueprint for purchase-related routes
+ticket_fairness_bp = Blueprint("ticket_fairness", __name__)
+
+
 
 
 def sale_has_started(concert_id):
@@ -31,6 +36,7 @@ def start_sale():
     return "Ticket sale has started."
 
 
+@ticket_fairness_bp.route("/concert/<int:concert_id>/waiting_room", methods=["GET"])
 def waiting_room(concert_id):
     username = session.get('username')
     user = auth_db.get_user_by_username(username)
@@ -39,7 +45,7 @@ def waiting_room(concert_id):
 
     # Check if the current datetime is earlier than the start_ticket_sale datetime
     if not sale_has_started(concert_id):
-        # I want to add this user into the waiting room queue for this specific concert
+
         # Get the TicketingSystem instance for this concert
         selected_ticketing_system = ticketing_systems[concert_id]
 
