@@ -8,6 +8,21 @@ class User:
         self.queue_position = None
 
 
+class Ticket:
+    def __init__(self, username):
+        self.id = username
+        self.locked = False
+
+    def is_locked(self):
+        return self.locked
+
+    def try_lock(self):
+        if not self.locked:
+            self.locked = True
+            return True
+        return False
+
+
 class WaitingRoomService:
     def __init__(self):
         self.waiting_room = []
@@ -74,3 +89,9 @@ class TicketingSystem:
     def users_in_waiting_room(self):
         users = self.waiting_room_service.get_waiting_room()
         return bool(users)
+
+    def process_queue(self, user_id):
+        users = self.waiting_room_service.get_waiting_room()
+        for user in users:
+            if not users or users[0].id == user_id:
+                self.waiting_room_service.get_waiting_room().remove(user)

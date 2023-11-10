@@ -77,7 +77,6 @@ def arrive_waiting_room(concert_id):
 @app.route('/concert/<int:concert_id>/user_status', methods=['GET'])
 def user_status(concert_id):
     # Replace the following lines with your actual logic
-    concert_id = concert_id  # Replace with the actual concert_id
     username = session.get('username')  # Replace with the actual user_id
 
     # Fetch the TicketingSystem instance for the concert
@@ -108,6 +107,20 @@ def user_status(concert_id):
 
     return jsonify(user_status_data)
 
+@app.route('/concert/<int:concert_id>/enter_booth', methods=['GET'])
+def enter_booth(concert_id):
+    # Replace the following lines with your actual logic
+    username = session.get('username')  # Replace with the actual user_id
+
+    # Fetch the TicketingSystem instance for the concert
+    selected_ticketing_system = ticketing_systems[str(concert_id)]
+
+    if not selected_ticketing_system:
+        return jsonify({"error": "Ticketing system not found."}), 500
+
+    selected_ticketing_system.process_queue(username)
+
+    return redirect("http://127.0.0.1:5000/fairness/concert/{}/booth".format(concert_id))
 
 with app.app_context():
     initialize_ticketing_systems()
