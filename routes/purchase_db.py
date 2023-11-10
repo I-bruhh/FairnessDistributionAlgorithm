@@ -46,7 +46,7 @@ def create_purchase():
     purchase_data = request.json
     try:
         # Add the purchase data to DynamoDB
-        response = dynamodb.put_item(
+        dynamodb.put_item(
             TableName=purchases_table_name,
             Item={k: {'S': str(v)} for k, v in purchase_data.items()}
         )

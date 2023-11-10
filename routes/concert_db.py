@@ -30,7 +30,7 @@ def get_all_concerts():
                 "total_tickets_for_sale": int(item["total_tickets_for_sale"]["N"]),
             }
             concerts.append(formatted_item)
-        #print(concerts)
+
         return jsonify(concerts)
     except Exception as e:
         return jsonify({'error': str(e)}), 500

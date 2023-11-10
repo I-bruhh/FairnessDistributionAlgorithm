@@ -2,15 +2,15 @@ import random
 
 
 class User:
-    def __init__(self, id, arrival_time):
-        self.id = id
+    def __init__(self, username, arrival_time):
+        self.id = username
         self.arrival_time = arrival_time
         self.queue_position = None
 
 
 class Ticket:
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, username):
+        self.id = username
         self.locked = False
 
     def is_locked(self):
@@ -47,7 +47,7 @@ class QueueManagerService:
             user.queue_position = queue_position
 
     def calculate_queue_position(self, user, users):
-        if not users:
+        if user and not users:
             return 0
         else:
             lower_bound = max(0, len(users) - self.acceptable_range)
@@ -74,8 +74,9 @@ class QueueService:
 
 
 class TicketingSystem:
-    def __init__(self, acceptable_range, max_tickets):
+    def __init__(self, acceptable_range, start_ticket_sale, max_tickets):
         self.acceptable_range = acceptable_range
+        self.start_ticket_sale = start_ticket_sale
         self.waiting_room_service = WaitingRoomService()
         self.queue_manager_service = QueueManagerService(self.waiting_room_service, acceptable_range)
         self.max_tickets = max_tickets
@@ -97,6 +98,6 @@ class TicketingSystem:
                 return user.queue_position
         return None  # User not found in the waiting room
 
-    def start_sale(self):
+    def process_waiting_room(self):
         queue_service = QueueService(self.waiting_room_service, self.tickets)
         queue_service.process_queue()
