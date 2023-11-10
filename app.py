@@ -1,11 +1,13 @@
 from config import Config
-from flask import Flask, request, redirect, session
+from flask import Flask, request, redirect, session, jsonify
+from flask_cors import CORS
 import fairness_distribution_algorithm
 import routes.concert_db as concert_db
 from datetime import datetime
 
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(Config)
 app.secret_key = 'your_secret_key'
 
@@ -34,6 +36,20 @@ def initialize_ticketing_systems():
         ticketing_systems[concert['concert_id']] = ticketing_system
 
 
+def sale_has_started(concert_id):
+    # Fetch the concert based on the concert_id
+    selected_concert = concert_db.get_concert_by_id(concert_id).get_json()
+
+    # Parse the start_ticket_sale datetime string to a datetime object
+    start_ticket_sale_datetime = datetime.strptime(selected_concert['start_ticket_sale'], "%Y-%m-%d %H:%M:%S")
+
+    # Get the current datetime
+    current_datetime = datetime.now()
+
+    # Check if the current datetime is earlier than the start_ticket_sale datetime
+    return current_datetime >= start_ticket_sale_datetime
+
+
 def add_user(ticketing_system):
     user_id = int(request.form['user_id'])
     arrival_time = int(request.form['arrival_time'])
@@ -56,6 +72,41 @@ def arrive_waiting_room(concert_id):
         queue_position = selected_ticketing_system.user_queue_position(username)
 
         return redirect("http://127.0.0.1:5000/fairness/concert/{}/waiting_room/{}".format(concert_id, queue_position))
+
+
+@app.route('/concert/<int:concert_id>/user_status', methods=['GET'])
+def user_status(concert_id):
+    # Replace the following lines with your actual logic
+    concert_id = concert_id  # Replace with the actual concert_id
+    username = session.get('username')  # Replace with the actual user_id
+
+    # Fetch the TicketingSystem instance for the concert
+    selected_ticketing_system = ticketing_systems[str(concert_id)]
+
+    if not selected_ticketing_system:
+        return jsonify({"error": "Ticketing system not found."}), 500
+
+    # Check if the sale has started
+    sale_started = sale_has_started(concert_id)
+
+    # Get the user's queue position
+    queue_position = selected_ticketing_system.user_queue_position(username)
+
+    # Check if it's the user's turn and the booth has available slots
+    is_user_turn = selected_ticketing_system.is_user_turn(username)
+
+    # Check if there are users in the waiting room
+    users_in_waiting_room = selected_ticketing_system.users_in_waiting_room()
+
+    user_status_data = {
+        "queuePosition": queue_position,
+        "isUserTurn": is_user_turn,
+        "saleStarted": sale_started,
+        "boothSlots": selected_ticketing_system.available_booth_slots(),
+        "usersInWaitingRoom": users_in_waiting_room
+    }
+
+    return jsonify(user_status_data)
 
 
 with app.app_context():

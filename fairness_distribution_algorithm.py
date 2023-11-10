@@ -8,21 +8,6 @@ class User:
         self.queue_position = None
 
 
-class Ticket:
-    def __init__(self, username):
-        self.id = username
-        self.locked = False
-
-    def is_locked(self):
-        return self.locked
-
-    def try_lock(self):
-        if not self.locked:
-            self.locked = True
-            return True
-        return False
-
-
 class WaitingRoomService:
     def __init__(self):
         self.waiting_room = []
@@ -54,37 +39,15 @@ class QueueManagerService:
             return random.randint(lower_bound, len(users))
 
 
-class QueueService:
-    def __init__(self, waiting_room_service, tickets):
-        self.waiting_room_service = waiting_room_service
-        self.tickets = tickets.copy()
-
-    def process_queue(self):
-        users = sorted(self.waiting_room_service.get_waiting_room(), key=lambda user: user.queue_position)
-        for user in users:
-            self.attempt_purchase(user)
-
-    def attempt_purchase(self, user):
-        for ticket in self.tickets:
-            if ticket.try_lock():
-                print(f"User {user.id} arriving at time {user.arrival_time} purchased ticket {ticket.id}")
-                self.waiting_room_service.get_waiting_room().remove(user)
-                self.tickets.remove(ticket)
-                break
-
-
 class TicketingSystem:
     def __init__(self, acceptable_range, start_ticket_sale, max_tickets):
         self.acceptable_range = acceptable_range
         self.start_ticket_sale = start_ticket_sale
         self.waiting_room_service = WaitingRoomService()
-        self.queue_manager_service = QueueManagerService(self.waiting_room_service, acceptable_range)
+        self.queue_manager_service = QueueManagerService(self.waiting_room_service,
+                                                         acceptable_range)
         self.max_tickets = max_tickets
         self.tickets = []
-
-    def setup_tickets(self, ticket_count):
-        for i in range(ticket_count):
-            self.tickets.append(Ticket(i))
 
     def add_user_to_waiting_room(self, user_id, arrival_time):
         user = User(user_id, arrival_time)
@@ -98,6 +61,16 @@ class TicketingSystem:
                 return user.queue_position
         return None  # User not found in the waiting room
 
-    def process_waiting_room(self):
-        queue_service = QueueService(self.waiting_room_service, self.tickets)
-        queue_service.process_queue()
+    def is_user_turn(self, user_id):
+        users = self.waiting_room_service.get_waiting_room()
+        if not users or users[0].id == user_id:
+            return True
+        return False
+
+    def available_booth_slots(self):
+        # Implement your logic to check the number of available booth slots
+        return 3  # Replace with your actual logic
+
+    def users_in_waiting_room(self):
+        users = self.waiting_room_service.get_waiting_room()
+        return bool(users)
