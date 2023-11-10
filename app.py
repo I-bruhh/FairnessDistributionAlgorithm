@@ -107,6 +107,7 @@ def user_status(concert_id):
 
     return jsonify(user_status_data)
 
+
 @app.route('/concert/<int:concert_id>/enter_booth', methods=['GET'])
 def enter_booth(concert_id):
     # Replace the following lines with your actual logic
@@ -121,6 +122,7 @@ def enter_booth(concert_id):
     selected_ticketing_system.process_queue(username)
 
     return redirect("http://127.0.0.1:5000/fairness/concert/{}/booth".format(concert_id))
+
 
 with app.app_context():
     initialize_ticketing_systems()
