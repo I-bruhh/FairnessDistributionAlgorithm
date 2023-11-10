@@ -1,11 +1,8 @@
-import random
-
-
 class User:
     def __init__(self, username, arrival_time):
         self.id = username
         self.arrival_time = arrival_time
-        self.queue_position = None
+        self.cluster_number = None
 
 
 class Ticket:
@@ -23,15 +20,42 @@ class Ticket:
         return False
 
 
-class WaitingRoomService:
+class LinkedListNode:
     def __init__(self):
-        self.waiting_room = []
+        self.cluster = []
+        self.next = None
+
+
+class WaitingRoomService:
+    def __init__(self, cluster_size):
+        self.cluster_size = cluster_size
+        self.head = LinkedListNode()
 
     def add_user(self, user):
-        self.waiting_room.append(user)
+        current_node = self.head
+        while current_node.next is not None and len(current_node.cluster) >= self.cluster_size:
+            current_node = current_node.next
+
+        if len(current_node.cluster) >= self.cluster_size:
+            new_node = LinkedListNode()
+            current_node.next = new_node
+            current_node = new_node
+
+        current_node.cluster.append(user)
 
     def get_waiting_room(self):
-        return self.waiting_room
+        current_node = self.head
+        waiting_room = []
+        print(current_node)
+        #print(waiting_room)
+        while current_node is not None:
+            print(current_node)
+            if current_node.cluster:
+                waiting_room.extend(current_node.cluster)
+            current_node = current_node.next
+        #print(current_node)
+
+        return waiting_room
 
 
 class QueueManagerService:
@@ -41,39 +65,37 @@ class QueueManagerService:
 
     def manage_queue(self):
         users = self.waiting_room_service.get_waiting_room()
+        cluster_index = 0
 
         for user in users:
-            queue_position = self.calculate_queue_position(user, users)
-            user.queue_position = queue_position
+            user.cluster_number = cluster_index
 
-    def calculate_queue_position(self, user, users):
-        if user and not users:
-            return 0
-        else:
-            lower_bound = max(0, len(users) - self.acceptable_range)
-            return random.randint(lower_bound, len(users))
+            cluster_index += 1
 
 
 class TicketingSystem:
     def __init__(self, acceptable_range, start_ticket_sale, max_tickets):
         self.acceptable_range = acceptable_range
         self.start_ticket_sale = start_ticket_sale
-        self.waiting_room_service = WaitingRoomService()
-        self.queue_manager_service = QueueManagerService(self.waiting_room_service,
-                                                         acceptable_range)
+        self.waiting_room_service = WaitingRoomService(acceptable_range)
+        self.queue_manager_service = QueueManagerService(self.waiting_room_service, acceptable_range)
         self.max_tickets = max_tickets
         self.tickets = []
 
     def add_user_to_waiting_room(self, user_id, arrival_time):
         user = User(user_id, arrival_time)
         self.waiting_room_service.add_user(user)
+        print(self.waiting_room_service.get_waiting_room())
         self.queue_manager_service.manage_queue()
 
-    def user_queue_position(self, user_id):
+    def user_cluster_number(self, username):
         users = self.waiting_room_service.get_waiting_room()
         for user in users:
-            if user.id == user_id:
-                return user.queue_position
+            print("test..." + user.id)
+            print("user_id..." + username)
+            if user.id == username:
+                print("enter")
+                return user.cluster_number
         return None  # User not found in the waiting room
 
     def is_user_turn(self, user_id):

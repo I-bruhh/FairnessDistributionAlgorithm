@@ -11,7 +11,7 @@ CORS(app)
 app.config.from_object(Config)
 app.secret_key = 'your_secret_key'
 
-base_url = 'http://0.0.0.0:5001'
+ticketmaster_base_url = 'http://127.0.0.1:5000'
 
 
 # Create a dictionary to store TicketingSystem instances
@@ -27,7 +27,7 @@ def initialize_ticketing_systems():
 
     for concert in concerts:
         # Define the acceptable range for the ticketing system
-        acceptable_range = 100
+        acceptable_range = 10
 
         ticketing_system = fairness_distribution_algorithm.TicketingSystem(acceptable_range,
                                                                            concert['start_ticket_sale'],
@@ -69,15 +69,16 @@ def arrive_waiting_room(concert_id):
         selected_ticketing_system.add_user_to_waiting_room(username, datetime.now())
 
         # Get the queue position assigned to the user
-        queue_position = selected_ticketing_system.user_queue_position(username)
+        cluster_number = selected_ticketing_system.user_cluster_number(username)
 
-        return redirect("http://127.0.0.1:5000/fairness/concert/{}/waiting_room/{}".format(concert_id, queue_position))
+        return redirect("{}/fairness/concert/{}/waiting_room/{}".format(ticketmaster_base_url,
+                                                                        concert_id, cluster_number))
 
 
 @app.route('/concert/<int:concert_id>/user_status', methods=['GET'])
 def user_status(concert_id):
     # Replace the following lines with your actual logic
-    username = session.get('username')  # Replace with the actual user_id
+    username = "ibrahim" # Replace with the actual user_id
 
     # Fetch the TicketingSystem instance for the concert
     selected_ticketing_system = ticketing_systems[str(concert_id)]
@@ -89,7 +90,7 @@ def user_status(concert_id):
     sale_started = sale_has_started(concert_id)
 
     # Get the user's queue position
-    queue_position = selected_ticketing_system.user_queue_position(username)
+    cluster_number = selected_ticketing_system.user_cluster_number(username)
 
     # Check if it's the user's turn and the booth has available slots
     is_user_turn = selected_ticketing_system.is_user_turn(username)
@@ -97,13 +98,16 @@ def user_status(concert_id):
     # Check if there are users in the waiting room
     users_in_waiting_room = selected_ticketing_system.users_in_waiting_room()
 
+    print("Users in waiting room:", selected_ticketing_system.waiting_room_service.get_waiting_room())
+
     user_status_data = {
-        "queuePosition": queue_position,
+        "clusterNumber": cluster_number,
         "isUserTurn": is_user_turn,
         "saleStarted": sale_started,
         "boothSlots": selected_ticketing_system.available_booth_slots(),
         "usersInWaitingRoom": users_in_waiting_room
     }
+    print(user_status_data)
 
     return jsonify(user_status_data)
 
@@ -121,7 +125,7 @@ def enter_booth(concert_id):
 
     selected_ticketing_system.process_queue(username)
 
-    return redirect("http://127.0.0.1:5000/fairness/concert/{}/booth".format(concert_id))
+    return redirect("{}/fairness/concert/{}/booth".format(ticketmaster_base_url, concert_id))
 
 
 with app.app_context():
