@@ -90,6 +90,13 @@ class TicketingSystem:
         self.waiting_room_service.add_user(user)
         self.queue_manager_service.manage_queue()
 
+    def user_queue_position(self, user_id):
+        users = self.waiting_room_service.get_waiting_room()
+        for user in users:
+            if user.id == user_id:
+                return user.queue_position
+        return None  # User not found in the waiting room
+
     def start_sale(self):
         queue_service = QueueService(self.waiting_room_service, self.tickets)
         queue_service.process_queue()

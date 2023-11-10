@@ -60,13 +60,10 @@ def start_sale():
     return "Ticket sale has started."
 
 
-@app.route("/concert/<int:concert_id>/waiting_room", methods=["GET"])
-def waiting_room(concert_id):
+@app.route("/concert/<int:concert_id>/arrive_waiting_room", methods=["GET"])
+def arrive_waiting_room(concert_id):
     username = session.get('username')
     user = auth_db.get_user_by_username(username)
-    print(user)
-    # Fetch the concert based on the concert_id
-    selected_concert = concert_db.get_concert_by_id(concert_id)
 
     # Check if the current datetime is earlier than the start_ticket_sale datetime
     if not sale_has_started(concert_id):
@@ -79,9 +76,9 @@ def waiting_room(concert_id):
             selected_ticketing_system.add_user_to_waiting_room(username, datetime.now())
 
             # Get the queue position assigned to the user
-            queue_position = selected_ticketing_system
+            queue_position = selected_ticketing_system.user_queue_position(username)
 
-            return render_template('waiting_room.html', concert=selected_concert, queue_position=queue_position)
+            return redirect("http://127.0.0.1:5000/fairness/concert/{}/waiting_room/{}".format(concert_id, queue_position))
 
     # If the current datetime is not earlier, users should not be in the waiting room
     return redirect(url_for("ticket_fairness.queue", concert_id=concert_id))
