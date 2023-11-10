@@ -46,14 +46,13 @@ class WaitingRoomService:
     def get_waiting_room(self):
         current_node = self.head
         waiting_room = []
-        print(current_node)
-        #print(waiting_room)
+
         while current_node is not None:
-            print(current_node)
+
             if current_node.cluster:
                 waiting_room.extend(current_node.cluster)
             current_node = current_node.next
-        #print(current_node)
+
 
         return waiting_room
 
@@ -91,10 +90,9 @@ class TicketingSystem:
     def user_cluster_number(self, username):
         users = self.waiting_room_service.get_waiting_room()
         for user in users:
-            print("test..." + user.id)
-            print("user_id..." + username)
+
             if user.id == username:
-                print("enter")
+
                 return user.cluster_number
         return None  # User not found in the waiting room
 
@@ -103,10 +101,6 @@ class TicketingSystem:
         if not users or users[0].id == user_id:
             return True
         return False
-
-    def available_booth_slots(self):
-        # Implement your logic to check the number of available booth slots
-        return 3  # Replace with your actual logic
 
     def users_in_waiting_room(self):
         users = self.waiting_room_service.get_waiting_room()

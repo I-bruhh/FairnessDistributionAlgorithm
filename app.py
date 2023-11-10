@@ -78,7 +78,7 @@ def arrive_waiting_room(concert_id):
 @app.route('/concert/<int:concert_id>/user_status', methods=['GET'])
 def user_status(concert_id):
     # Replace the following lines with your actual logic
-    username = "ibrahim" # Replace with the actual user_id
+    username = "ibrahim"
 
     # Fetch the TicketingSystem instance for the concert
     selected_ticketing_system = ticketing_systems[str(concert_id)]
@@ -104,7 +104,6 @@ def user_status(concert_id):
         "clusterNumber": cluster_number,
         "isUserTurn": is_user_turn,
         "saleStarted": sale_started,
-        "boothSlots": selected_ticketing_system.available_booth_slots(),
         "usersInWaitingRoom": users_in_waiting_room
     }
     print(user_status_data)
