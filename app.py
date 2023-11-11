@@ -34,8 +34,7 @@ def initialize_ticketing_systems():
         acceptable_range = 1
 
         ticketing_system = fairness_distribution_algorithm.TicketingSystem(acceptable_range,
-                                                                           concert['start_ticket_sale'],
-                                                                           concert['total_tickets_for_sale'])
+                                                                           concert['start_ticket_sale'])
 
         ticketing_systems[concert['concert_id']] = ticketing_system
 

@@ -5,21 +5,6 @@ class User:
         self.cluster_number = None
 
 
-class Ticket:
-    def __init__(self, username):
-        self.id = username
-        self.locked = False
-
-    def is_locked(self):
-        return self.locked
-
-    def try_lock(self):
-        if not self.locked:
-            self.locked = True
-            return True
-        return False
-
-
 class LinkedListNode:
     def __init__(self):
         self.cluster = []
@@ -72,14 +57,12 @@ class QueueManagerService:
 
 
 class TicketingSystem:
-    def __init__(self, acceptable_range, start_ticket_sale, max_tickets):
+    def __init__(self, acceptable_range, start_ticket_sale):
         self.acceptable_range = acceptable_range
         self.start_ticket_sale = start_ticket_sale
         self.waiting_room_service = WaitingRoomService(acceptable_range)
         self.queue_manager_service = QueueManagerService(self.waiting_room_service, acceptable_range)
         self.available_booths = acceptable_range
-        self.max_tickets = max_tickets
-        self.tickets = []
 
     def add_user_to_waiting_room(self, user_id, arrival_time):
         user = User(user_id, arrival_time)
