@@ -53,7 +53,6 @@ class WaitingRoomService:
                 waiting_room.extend(current_node.cluster)
             current_node = current_node.next
 
-
         return waiting_room
 
 
@@ -114,7 +113,7 @@ class TicketingSystem:
                 self.waiting_room_service.get_waiting_room().remove(user)
 
     def check_booth(self):
-        if self.available_booths == 10:
+        if self.available_booths == self.acceptable_range:
             return True
         return False
 

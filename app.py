@@ -31,7 +31,7 @@ def initialize_ticketing_systems():
 
     for concert in concerts:
         # Define the acceptable range for the ticketing system
-        acceptable_range = 10
+        acceptable_range = 1
 
         ticketing_system = fairness_distribution_algorithm.TicketingSystem(acceptable_range,
                                                                            concert['start_ticket_sale'],
@@ -84,9 +84,6 @@ def user_status(concert_id):
     # Replace the following lines with your actual logic
     username = session.get('username')
 
-    print(username)
-    print("printing!")
-
     # Fetch the TicketingSystem instance for the concert
     selected_ticketing_system = ticketing_systems[str(concert_id)]
 
@@ -106,8 +103,6 @@ def user_status(concert_id):
     # Check if there are users in the waiting room
     users_in_waiting_room = selected_ticketing_system.users_in_waiting_room()
 
-    print("Users in waiting room:", selected_ticketing_system.waiting_room_service.get_waiting_room())
-
     user_status_data = {
         "boothReady": booth_ready,
         "clusterNumber": cluster_number,
@@ -115,7 +110,6 @@ def user_status(concert_id):
         "saleStarted": sale_started,
         "usersInWaitingRoom": users_in_waiting_room
     }
-    print(user_status_data)
 
     return jsonify(user_status_data)
 
@@ -158,7 +152,7 @@ def return_booth(concert_id):
         print(selected_ticketing_system.available_booths)
 
         # Create a new purchase and add it to the database
-        session['purchase_data'] = {
+        purchase_data = {
             'username': username,
             'concert_id': concert_id,
             'concert_name': concert_name,
@@ -168,7 +162,7 @@ def return_booth(concert_id):
             'quantity': quantity
         }
 
-        return redirect("{}/purchase/concert/confirm".format(ticketmaster_base_url, concert_id))
+        return redirect("{}/purchase/concert/confirm?purchase_data={}".format(ticketmaster_base_url, purchase_data))
 
 
 with app.app_context():
