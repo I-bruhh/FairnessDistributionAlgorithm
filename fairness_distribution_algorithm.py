@@ -78,6 +78,7 @@ class TicketingSystem:
         self.start_ticket_sale = start_ticket_sale
         self.waiting_room_service = WaitingRoomService(acceptable_range)
         self.queue_manager_service = QueueManagerService(self.waiting_room_service, acceptable_range)
+        self.available_booths = acceptable_range
         self.max_tickets = max_tickets
         self.tickets = []
 
@@ -111,3 +112,14 @@ class TicketingSystem:
         for user in users:
             if not users or users[0].id == user_id:
                 self.waiting_room_service.get_waiting_room().remove(user)
+
+    def check_booth(self):
+        if self.available_booths == 10:
+            return True
+        return False
+
+    def release_booth(self):
+        self.available_booths += 1
+
+    def occupy_booth(self):
+        self.available_booths -= 1

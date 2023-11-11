@@ -1,4 +1,5 @@
 from config import Config
+from flask_session import Session
 from flask import Flask, request, redirect, session, jsonify
 from flask_cors import CORS
 import fairness_distribution_algorithm
@@ -7,6 +8,9 @@ from datetime import datetime
 
 
 app = Flask(__name__)
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_KEY_PREFIX'] = 'your_prefix'
+Session(app)
 CORS(app)
 app.config.from_object(Config)
 app.secret_key = 'your_secret_key'
@@ -78,7 +82,10 @@ def arrive_waiting_room(concert_id):
 @app.route('/concert/<int:concert_id>/user_status', methods=['GET'])
 def user_status(concert_id):
     # Replace the following lines with your actual logic
-    username = "ibrahim"
+    username = session.get('username')
+
+    print(username)
+    print("printing!")
 
     # Fetch the TicketingSystem instance for the concert
     selected_ticketing_system = ticketing_systems[str(concert_id)]
@@ -92,6 +99,7 @@ def user_status(concert_id):
     # Get the user's queue position
     cluster_number = selected_ticketing_system.user_cluster_number(username)
 
+    booth_ready = selected_ticketing_system.check_booth()
     # Check if it's the user's turn and the booth has available slots
     is_user_turn = selected_ticketing_system.is_user_turn(username)
 
@@ -101,6 +109,7 @@ def user_status(concert_id):
     print("Users in waiting room:", selected_ticketing_system.waiting_room_service.get_waiting_room())
 
     user_status_data = {
+        "boothReady": booth_ready,
         "clusterNumber": cluster_number,
         "isUserTurn": is_user_turn,
         "saleStarted": sale_started,
@@ -114,7 +123,7 @@ def user_status(concert_id):
 @app.route('/concert/<int:concert_id>/enter_booth', methods=['GET'])
 def enter_booth(concert_id):
     # Replace the following lines with your actual logic
-    username = session.get('username')  # Replace with the actual user_id
+    username = session.get('username')
 
     # Fetch the TicketingSystem instance for the concert
     selected_ticketing_system = ticketing_systems[str(concert_id)]
@@ -124,7 +133,42 @@ def enter_booth(concert_id):
 
     selected_ticketing_system.process_queue(username)
 
+    selected_ticketing_system.occupy_booth()
+    print(selected_ticketing_system.available_booths)
+
     return redirect("{}/fairness/concert/{}/booth".format(ticketmaster_base_url, concert_id))
+
+
+@app.route('/concert/<int:concert_id>/return_booth', methods=['GET', 'POST'])
+def return_booth(concert_id):
+    username = session.get('username')
+
+    if request.method == "POST":
+        concert_id = concert_id
+        concert_name = request.form.get("concert_name")
+        date = request.form.get("concert_date")
+        venue = request.form.get("concert_venue")
+        category = request.form.get("ticket_category")
+        quantity = request.form.get("ticket_quantity")
+
+        # Fetch the TicketingSystem instance for the concert
+        selected_ticketing_system = ticketing_systems[str(concert_id)]
+
+        selected_ticketing_system.release_booth()
+        print(selected_ticketing_system.available_booths)
+
+        # Create a new purchase and add it to the database
+        session['purchase_data'] = {
+            'username': username,
+            'concert_id': concert_id,
+            'concert_name': concert_name,
+            'date': date,
+            'venue': venue,
+            'category': category,
+            'quantity': quantity
+        }
+
+        return redirect("{}/purchase/concert/confirm".format(ticketmaster_base_url, concert_id))
 
 
 with app.app_context():
